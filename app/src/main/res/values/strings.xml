@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">todo_app_sample</string>
+    <string name="Todo_List">Todo List</string>
+    <string name="newTodo">add</string>
+    <string name="btSave">SAVE</string>
+    <string name="btDelete">ALL DELETE</string>
+</resources>
