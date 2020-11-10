@@ -1,26 +1,22 @@
 package com.jour1.todo_app_sample;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     int _todoID = -1;
@@ -28,73 +24,85 @@ public class MainActivity extends AppCompatActivity {
     private SQLiteDatabase db;
     private TextView mShowText;
     private Button mDeleteButton;
+    private RecyclerView recyclerView;
+    private MyAdapter mAdapter;
+    private RecyclerView.LayoutManager layoutManager;
+    private EditText addText;
+    private Button btAdd;
+    private ArrayList<String> myDataset;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mShowText = findViewById(R.id.showText);
-        //final ListView lvMenu = findViewById(R.id.lvMenu);
-        Button btAdd = findViewById(R.id.btAdd);
-        final EditText addText = findViewById(R.id.addMemo);
+        helper = new DataBaseHelper(MainActivity.this);
+        recyclerView = (RecyclerView)findViewById(R.id.showList);
+        btAdd = findViewById(R.id.btAdd);
+        addText = findViewById(R.id.addMemo);
         mDeleteButton = findViewById(R.id.btDelete);
+        myDataset = new ArrayList<>();
 
+        setData();
 
-        //make arrayadapter to show the list on the screen
+        //create adapter
+        mAdapter = new MyAdapter(MainActivity.this,myDataset);
+        recyclerView.setAdapter(mAdapter);
 
+        //not to change the layout size
+        recyclerView.setHasFixedSize(true);
+
+        //use a linear layout manager
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        //make line item by item
+        final RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this,DividerItemDecoration.VERTICAL);
+        recyclerView.addItemDecoration(itemDecoration);
 
         //when push "add" button , add the text which on Edit text
         btAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(helper == null){
-                    helper = new DataBaseHelper(getApplicationContext());
-                }
-                if(db == null){
-                    db = helper.getWritableDatabase();
-                }
-                //get input text
-                String inputStr = addText.getText().toString();
-                saveData(db, inputStr);
-                readData();
+                Intent intent = new Intent(MainActivity.this, add_text.class);
+                startActivity(intent);
             }
         });
 
-        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+       mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                db.delete("todoSample",null,null);
-                readData();
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Caution")
+                        .setMessage("Do you really delete the List?")
+                        .setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        helper.dbDelete();
+                                        helper.close();
+                                        mAdapter.notifyDataSetChanged();
+
+
+                                    }
+                                })
+                        .setNegativeButton("Cancel",null)
+                        .show();
+
             }
+
         });
 
 
     }
-    public void saveData(SQLiteDatabase db, String item){
-        ContentValues values = new ContentValues();
-        values.put("todo", item);
-        db.insert("todoSample",null,values);
-    }
 
-    public void readData(){
-        Cursor cur = db.query(
-                "todoSample",
-                new String[] {"todo"},
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-        cur.moveToFirst();
-        StringBuilder sbuilder = new StringBuilder();
-        for(int i = 0; i< cur.getCount(); i++){
-            sbuilder.append(cur.getString(0));
-            sbuilder.append("\n");
-            cur.moveToNext();
-        }
-        cur.close();
-        mShowText.setText(sbuilder.toString());
+
+    //control cursor prepared by readData *i = 0 is id
+    public void setData(){
+        Cursor c = helper.readData();
+       while(c.moveToNext()){
+           myDataset.add(c.getString(1));
+       }
     }
 }
+

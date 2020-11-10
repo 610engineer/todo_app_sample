@@ -1,11 +1,13 @@
 package com.jour1.todo_app_sample;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class DataBaseHelper extends SQLiteOpenHelper {
+    private Context context;
 
     //field of database name
     private static final String DATABASE_NAME = "todoSample.db";
@@ -19,9 +21,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     //call parent constracter
     public DataBaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
     }
-
-
         @Override
         public void onCreate(SQLiteDatabase db){
             //conduct SQL
@@ -31,6 +32,31 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         @Override
         public  void onUpgrade(SQLiteDatabase db, int oldVersion , int newVersion){
         }
+
+     Cursor readData(){
+        String query = "SELECT * FROM todoSample";
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = null;
+         if (db != null) {
+             cursor = db.rawQuery(query,null);
+         }
+         return cursor;
+     }
+
+     void addText(String todo){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("todo",todo);
+        db.insert("todoSample",null,cv);
+        
+     }
+
+     void dbDelete(){
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("Delete FROM todosample");
+     }
+
 
 
 
