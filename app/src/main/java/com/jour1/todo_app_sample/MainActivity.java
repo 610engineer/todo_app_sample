@@ -80,10 +80,8 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         helper.dbDelete();
+                                        helper.readData();
                                         helper.close();
-                                        mAdapter.notifyDataSetChanged();
-
-
                                     }
                                 })
                         .setNegativeButton("Cancel",null)

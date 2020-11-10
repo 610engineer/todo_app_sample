@@ -53,8 +53,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
      }
 
      void dbDelete(){
-        SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("Delete FROM todosample");
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("Delete FROM todoSample");
+        readData();
+     }
+
+     public void rowDelete(int num){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM todoSample where _id =" + num);
      }
 
 
